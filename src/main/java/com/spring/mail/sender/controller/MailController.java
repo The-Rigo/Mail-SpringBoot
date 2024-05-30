@@ -2,7 +2,9 @@ package com.spring.mail.sender.controller;
 
 import com.spring.mail.sender.domain.EmailDTO;
 import com.spring.mail.sender.domain.EmailFileDTO;
+import com.spring.mail.sender.service.EmailService;
 import com.spring.mail.sender.service.IEmailService;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,18 +24,47 @@ public class MailController {
     @Autowired
     private IEmailService emailService;
 
+    @Autowired
+    private EmailService mailService;
+
     @PostMapping("/sendMessage")
     public ResponseEntity<?> receiveRequestEmail(@RequestBody EmailDTO emailDTO){
 
         System.out.println("Mensaje Recibido " + emailDTO);
 
-        emailService.sendEmail(emailDTO.getToUser(), emailDTO.getSubject(), emailDTO.getMessage());
+        //emailService.sendEmail(emailDTO.getToUser(), emailDTO.getSubject(), emailDTO.getMessage());
 
         Map<String, String> response = new HashMap<>();
         response.put("estado", "Enviado");
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/sendMail")
+    public ResponseEntity<?> receiveRequestMail(@RequestBody EmailDTO emailDTO){
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("name", emailDTO.getMessage() );
+
+        System.out.println("Mensaje Recibido " + emailDTO);
+
+        try {
+            mailService.sendEmail( emailDTO.getToUser(), emailDTO.getSubject(), "templates/email-template.vm", model);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+
+        }
+        return ResponseEntity.ok(model);
+
+//        emailService.sendEmail(emailDTO.getToUser(), emailDTO.getSubject(), emailDTO.getMessage());
+//
+//        Map<String, String> response = new HashMap<>();
+//        response.put("estado", "Enviado");
+//
+//        return ResponseEntity.ok(response);
+    }
+
+
 
 
     @PostMapping("/sendMessageFile")
